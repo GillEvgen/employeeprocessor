@@ -30,15 +30,19 @@ public class Department {
         employees.add(employee);
     }
 
-    public double calculateAverageSalary() {
-        return employees.stream()
-                .mapToDouble(Employee::getSalary)
-                .average()
-                .orElse(0);
-    }
-
+    // Подсчёт количества сотрудников
     public int getEmployeeCount() {
         return employees.size();
+    }
+
+    // Подсчёт средней зарплаты
+    public double getAverageSalary() {
+        if (employees.isEmpty()) return 0.0;
+
+        double totalSalary = employees.stream()
+                .mapToDouble(Employee::getSalary)
+                .sum();
+        return Math.ceil((totalSalary / employees.size()) * 100) / 100.0; // Округляем до 2 знаков вверх
     }
 }
 

@@ -48,6 +48,7 @@ public class FileService {
         System.out.println(department.getName());
         System.out.println(department.getManager());
         department.getEmployees().forEach(System.out::println);
+        System.out.printf("amount,salary %d,%.2f%n", department.getEmployeeCount(), department.getAverageSalary());
     }
 
     private void printInvalidDataToConsole(List<String> invalidData) {
@@ -61,6 +62,7 @@ public class FileService {
         writer.println(department.getName());
         writer.println(department.getManager());
         department.getEmployees().forEach(writer::println);
+        writer.printf("amount,salary %d,%.2f%n", department.getEmployeeCount(), department.getAverageSalary());
     }
 
     private void printInvalidDataToFile(PrintWriter writer, List<String> invalidData) {
