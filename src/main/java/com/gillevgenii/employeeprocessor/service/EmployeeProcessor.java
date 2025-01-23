@@ -16,45 +16,66 @@ public class EmployeeProcessor {
 
     public void run() {
         try {
-            // Парсинг аргументов
-            Map<String, String> arguments = ArgumentParser.parse(args);
+            Map<String, String> arguments = parseArguments();
 
-            // Чтение данных из файла
-            FileService fileService = new FileService();
-            List<String> lines = fileService.readFile(arguments.get("path"));
+            List<String> lines = readFile(arguments);
 
-            // Парсинг данных
             DataParser dataParser = new DataParser();
             Map<Integer, Manager> managers = new HashMap<>();
             Set<Employee> employees = new HashSet<>();
-            List<String> invalidData = new ArrayList<>();
+            List<String> invalidData = parseData(lines, dataParser, managers, employees);
 
-            lines.stream().forEach(line -> {
-                try {
-                    Employee employee = dataParser.parseLine(line);
-                    if (employee instanceof Manager) {
-                        managers.put(employee.getId(), (Manager) employee);
-                    } else {
-                        employees.add(employee);
-                    }
-                } catch (IllegalArgumentException e) {
-                    invalidData.add(line);
-                }
-            });
+            Set<Employee> validEmployees = filterEmployees(employees, managers);
 
-            // Фильтрация данных
-            DataFilter dataFilter = new DataFilter();
-            Set<Employee> validEmployees = dataFilter.filterValidEmployees(employees, managers);
+            Map<String, Department> departments = groupDepartments(managers, validEmployees);
 
-            // Группировка по департаментам
-            Map<String, Department> departments = dataFilter.groupByDepartments(managers, validEmployees);
-
-            // Вывод результатов
-            fileService.outputResults(departments, invalidData, arguments.getOrDefault("output", "console"), arguments.get("path"));
+            outputResults(arguments, departments, invalidData);
 
         } catch (Exception e) {
             System.err.println("Произошла ошибка: " + e.getMessage());
         }
+    }
+
+    private Map<String, String> parseArguments() {
+        return ArgumentParser.parse(args);
+    }
+
+    private List<String> readFile(Map<String, String> arguments) {
+        FileService fileService = new FileService();
+        return fileService.readFile(arguments.get("path"));
+    }
+
+    private List<String> parseData(List<String> lines, DataParser dataParser, Map<Integer, Manager> managers, Set<Employee> employees) {
+        List<String> invalidData = new ArrayList<>();
+        lines.stream().forEach(line -> {
+            try {
+                Employee employee = dataParser.parseLine(line);
+                if (employee instanceof Manager) {
+                    managers.put(employee.getId(), (Manager) employee);
+                } else {
+                    employees.add(employee);
+                }
+            } catch (IllegalArgumentException e) {
+                invalidData.add(line);
+            }
+        });
+        return invalidData;
+    }
+
+    private Set<Employee> filterEmployees(Set<Employee> employees, Map<Integer, Manager> managers) {
+        DataFilter dataFilter = new DataFilter();
+        return dataFilter.filterValidEmployees(employees, managers);
+    }
+
+    private Map<String, Department> groupDepartments(Map<Integer, Manager> managers, Set<Employee> employees) {
+        DataFilter dataFilter = new DataFilter();
+        return dataFilter.groupByDepartments(managers, employees);
+    }
+
+    private void outputResults(Map<String, String> arguments, Map<String, Department> departments, List<String> invalidData) {
+        FileService fileService = new FileService();
+        String output = arguments.getOrDefault("output", "console");
+        fileService.outputResults(departments, invalidData, output, arguments.get("path"));
     }
 }
 
