@@ -1,0 +1,30 @@
+# Maven
+/target/
+*.iml
+*.class
+
+# Logs
+logs/
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IntelliJ IDEA
+.idea/
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Java
+*.jar
+*.war
+*.ear
+
+# Others
+*.tmp
+*.bak
