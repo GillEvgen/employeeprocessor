@@ -10,7 +10,7 @@ public class Employee{
         private final double salary;
         private final int managerId;
 
-        public Employee(String position, int id, String name, double salary, int managerId) {
+    public Employee(String position, int id, String name, double salary, int managerId) {
             this.position = position;
             this.id = id;
             this.name = name.trim();

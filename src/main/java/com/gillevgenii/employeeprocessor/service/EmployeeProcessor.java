@@ -5,7 +5,6 @@ import com.gillevgenii.employeeprocessor.model.Employee;
 import com.gillevgenii.employeeprocessor.model.Manager;
 import com.gillevgenii.employeeprocessor.utils.ArgumentParser;
 
-import java.io.File;
 import java.util.*;
 
 public class EmployeeProcessor {
@@ -30,7 +29,7 @@ public class EmployeeProcessor {
             Set<Employee> employees = new HashSet<>();
             List<String> invalidData = new ArrayList<>();
 
-            for (String line : lines) {
+            lines.stream().forEach(line -> {
                 try {
                     Employee employee = dataParser.parseLine(line);
                     if (employee instanceof Manager) {
@@ -41,7 +40,7 @@ public class EmployeeProcessor {
                 } catch (IllegalArgumentException e) {
                     invalidData.add(line);
                 }
-            }
+            });
 
             // Фильтрация данных
             DataFilter dataFilter = new DataFilter();

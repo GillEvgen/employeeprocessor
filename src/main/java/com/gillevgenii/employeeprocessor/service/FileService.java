@@ -1,6 +1,8 @@
 package com.gillevgenii.employeeprocessor.service;
 
 import com.gillevgenii.employeeprocessor.model.Department;
+import com.gillevgenii.employeeprocessor.model.Employee;
+import com.gillevgenii.employeeprocessor.model.Manager;
 
 import java.io.*;
 import java.util.List;
@@ -36,7 +38,7 @@ public class FileService {
             }
 
             try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
-                departments.values().forEach(department -> printDepartmentToFile(writer, department));
+                departments.values().stream().forEach(department -> printDepartmentToFile(writer, department));
                 printInvalidDataToFile(writer, invalidData);
             }
         } catch (IOException e) {
@@ -47,29 +49,28 @@ public class FileService {
     private void printDepartmentToConsole(Department department) {
         System.out.println(department.getName());
         System.out.println(department.getManager());
-        department.getEmployees().forEach(System.out::println);
+        department.getEmployees().stream().forEach(System.out::println);
         System.out.printf("amount,salary %d,%.2f%n", department.getEmployeeCount(), department.getAverageSalary());
     }
 
     private void printInvalidDataToConsole(List<String> invalidData) {
         if (!invalidData.isEmpty()) {
             System.out.println("Некорректные данные:");
-            invalidData.forEach(System.out::println);
+            invalidData.stream().forEach(System.out::println);
         }
     }
 
     private void printDepartmentToFile(PrintWriter writer, Department department) {
         writer.println(department.getName());
         writer.println(department.getManager());
-        department.getEmployees().forEach(writer::println);
+        department.getEmployees().stream().forEach(writer::println);
         writer.printf("amount,salary %d,%.2f%n", department.getEmployeeCount(), department.getAverageSalary());
     }
 
     private void printInvalidDataToFile(PrintWriter writer, List<String> invalidData) {
         if (!invalidData.isEmpty()) {
             writer.println("Некорректные данные:");
-            invalidData.forEach(writer::println);
+            invalidData.stream().forEach(writer::println);
         }
     }
 }
-
