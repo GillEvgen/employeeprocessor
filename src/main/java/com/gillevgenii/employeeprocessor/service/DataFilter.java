@@ -49,7 +49,6 @@ public class DataFilter {
                 }
             }
         });
-
         return departments;
     }
 }
