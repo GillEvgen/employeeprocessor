@@ -17,43 +17,12 @@ public class EmployeeProcessor {
 
     public void run() {
         try {
-            // Проверка наличия аргументов командной строки
-            if (args == null || args.length == 0) {
-                throw new IllegalArgumentException("Не переданы аргументы командной строки. Укажите --path=<путь к файлу> и другие параметры.");
-            }
-
-            // Вывод переданных аргументов для отладки
-            System.out.println("Переданные аргументы: " + Arrays.toString(args));
-
-            // Парсинг аргументов командной строки
+            // Парсинг аргументов
             Map<String, String> arguments = ArgumentParser.parse(args);
-            System.out.println("Проверяем наличие аргументов: " + arguments);
 
-            // Проверяем наличие обязательных аргументов
-            ArgumentParser.validateRequiredArguments(arguments, "path");
-
-            // Проверяем корректность значений для сортировки и порядка
-            ArgumentParser.validateArgumentValue(arguments, "sort", "name", "salary");
-            ArgumentParser.validateArgumentValue(arguments, "order", "asc", "desc");
-
-            // Читаем путь к входному файлу
-            String filePath = arguments.get("path");
-            System.out.println("Путь к входному файлу: " + filePath);
-
-            // Проверяем существование входного файла
-            File inputFile = new File(filePath);
-            if (!inputFile.exists() || !inputFile.isFile()) {
-                throw new IllegalArgumentException("Входной файл не найден: " + filePath);
-            }
-
-            // Читаем данные из файла
+            // Чтение данных из файла
             FileService fileService = new FileService();
-            List<String> lines = fileService.readFile(filePath);
-
-            // Проверяем, что файл не пуст
-            if (lines == null || lines.isEmpty()) {
-                throw new IllegalArgumentException("Входной файл пуст или отсутствует.");
-            }
+            List<String> lines = fileService.readFile(arguments.get("path"));
 
             // Парсинг данных
             DataParser dataParser = new DataParser();
@@ -74,34 +43,18 @@ public class EmployeeProcessor {
                 }
             }
 
-            // Проверяем, что найдены менеджеры
-            if (managers.isEmpty()) {
-                throw new IllegalArgumentException("Не найдено ни одного менеджера в данных.");
-            }
+            // Фильтрация данных
+            DataFilter dataFilter = new DataFilter();
+            Set<Employee> validEmployees = dataFilter.filterValidEmployees(employees, managers);
 
-            // Фильтруем сотрудников без менеджеров
-            Set<Employee> validEmployees = dataParser.filterValidEmployees(employees, managers);
-
-            // Группируем сотрудников по департаментам
-            Map<String, Department> departments = dataParser.groupByDepartments(managers, validEmployees);
-
-            // Сортировка данных
-            String sortBy = arguments.getOrDefault("sort", "none");
-            String order = arguments.getOrDefault("order", "asc");
-            if (!"none".equalsIgnoreCase(sortBy)) {
-                SortService sortService = new SortService();
-                sortService.sortDepartments(departments, sortBy, order);
-            }
+            // Группировка по департаментам
+            Map<String, Department> departments = dataFilter.groupByDepartments(managers, validEmployees);
 
             // Вывод результатов
-            String output = arguments.getOrDefault("output", "console");
-            fileService.outputResults(departments, invalidData, output, arguments.get("path"));
+            fileService.outputResults(departments, invalidData, arguments.getOrDefault("output", "console"), arguments.get("path"));
 
-        } catch (IllegalArgumentException e) {
-            System.err.println("Ошибка: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Произошла ошибка: " + e.getMessage());
-            e.printStackTrace(); // Для отладки
         }
     }
 }

@@ -1,23 +1,16 @@
 package com.gillevgenii.employeeprocessor.service;
 
-import com.gillevgenii.employeeprocessor.model.Department;
 import com.gillevgenii.employeeprocessor.model.Employee;
 import com.gillevgenii.employeeprocessor.model.Manager;
-import com.gillevgenii.employeeprocessor.utils.ValidationUtils;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class DataParser {
 
     /**
-     * Парсит строку данных и создает объект Employee или Manager.
+     * Парсит строку данных в объект Employee или Manager.
      *
-     * @param line строка с данными
+     * @param line строка данных
      * @return объект Employee или Manager
-     * @throws IllegalArgumentException если строка некорректна
+     * @throws IllegalArgumentException если данные некорректны
      */
     public Employee parseLine(String line) {
         String[] parts = line.split(",");
@@ -25,62 +18,39 @@ public class DataParser {
             throw new IllegalArgumentException("Некорректный формат данных: " + line);
         }
 
-        String position = parts[0].trim();
-        int id = ValidationUtils.parseInt(parts[1].trim(), "Некорректный идентификатор сотрудника");
+        String role = parts[0].trim();
+        int id = parseInteger(parts[1].trim(), "ID");
         String name = parts[2].trim();
-        double salary = ValidationUtils.parseDouble(parts[3].trim(), "Некорректная зарплата");
-        if (!ValidationUtils.isValidSalary(salary)) {
-            throw new IllegalArgumentException("Зарплата должна быть больше 0: " + salary);
-        }
+        double salary = parseDouble(parts[3].trim(), "зарплата");
+        String departmentOrManagerId = parts[4].trim();
 
-        String lastPart = parts[4].trim();
-        if ("Manager".equalsIgnoreCase(position)) {
-            // Парсинг менеджера
-            return new Manager(position, id, name, salary, lastPart);
-        } else if ("Employee".equalsIgnoreCase(position)) {
-            // Парсинг сотрудника
-            int managerId = ValidationUtils.parseInt(lastPart, "Некорректный идентификатор менеджера");
-            return new Employee(position, id, name, salary, managerId);
+        if ("Manager".equalsIgnoreCase(role)) {
+            return new Manager(role, id, name,salary, departmentOrManagerId);
+        } else if ("Employee".equalsIgnoreCase(role)) {
+            int managerId = parseInteger(departmentOrManagerId, "ID менеджера");
+            return new Employee(role,id, name, salary, managerId);
         } else {
-            throw new IllegalArgumentException("Некорректная должность: " + position);
+            throw new IllegalArgumentException("Неизвестная роль: " + role);
         }
     }
 
-    /**
-     * Фильтрует сотрудников, исключая тех, у кого отсутствуют менеджеры.
-     *
-     * @param employees список сотрудников
-     * @param managers  мапа менеджеров
-     * @return список валидных сотрудников
-     */
-    public Set<Employee> filterValidEmployees(Set<Employee> employees, Map<Integer, Manager> managers) {
-        return employees.stream()
-                .filter(e -> managers.containsKey(e.getManagerId())) // У сотрудника должен быть менеджер
-                .collect(Collectors.toSet());
+    private int parseInteger(String value, String fieldName) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Некорректное значение для " + fieldName + ": " + value);
+        }
     }
 
-    /**
-     * Группирует сотрудников по департаментам на основе их менеджеров.
-     *
-     * @param managers  мапа менеджеров
-     * @param employees список валидных сотрудников
-     * @return мапа департаментов
-     */
-    public Map<String, Department> groupByDepartments(Map<Integer, Manager> managers, Set<Employee> employees) {
-        Map<String, Department> departments = new TreeMap<>(); // TreeMap для сортировки департаментов
-
-        // Создаем департаменты для каждого менеджера
-        for (Manager manager : managers.values()) {
-            departments.put(manager.getDepartment(), new Department(manager.getDepartment(), manager));
-        }
-
-        // Добавляем сотрудников в соответствующие департаменты
-        for (Employee employee : employees) {
-            Manager manager = managers.get(employee.getManagerId());
-            if (manager != null) {
-                departments.get(manager.getDepartment()).addEmployee(employee);
+    private double parseDouble(String value, String fieldName) {
+        try {
+            double result = Double.parseDouble(value);
+            if (result < 0) {
+                throw new IllegalArgumentException(fieldName + " не может быть отрицательной: " + value);
             }
+            return result;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Некорректное значение для " + fieldName + ": " + value);
         }
-        return departments;
     }
 }
