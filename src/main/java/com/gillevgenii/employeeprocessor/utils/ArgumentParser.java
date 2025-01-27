@@ -12,26 +12,27 @@ public class ArgumentParser {
      * @return мапа аргументов (ключ -> значение)
      * @throws IllegalArgumentException если аргументы некорректны
      */
-    public static Map<String, String> parse(String[] args) {
-        Map<String, String> arguments = new HashMap<>();
+        public static Map<String, String> parse(String[] args) {
+            Map<String, String> arguments = new HashMap<>();
 
-        for (String arg : args) {
-            if (arg.startsWith("--")) {
+            for (String arg : args) {
+                if (!arg.startsWith("--")) {
+                    throw new IllegalArgumentException("Аргумент должен начинаться с '--': " + arg);
+                }
+
                 String[] parts = arg.substring(2).split("=", 2);
-                if (parts.length == 2) {
-                    String key = parts[0].trim().toLowerCase(); // Ключ
-                    String value = parts[1].trim(); // Значение
-                    arguments.put(key, value);
-                } else {
+                if (parts.length != 2) {
                     throw new IllegalArgumentException("Некорректный аргумент: " + arg);
                 }
-            } else {
-                throw new IllegalArgumentException("Аргумент должен начинаться с '--': " + arg);
+
+                String key = parts[0].trim().toLowerCase(); // Ключ
+                String value = parts[1].trim(); // Значение
+                arguments.put(key, value);
             }
+
+            return arguments;
         }
 
-        return arguments;
-    }
 
     /**
      * Проверяет наличие обязательных аргументов.
@@ -40,11 +41,16 @@ public class ArgumentParser {
      * @param requiredKeys список обязательных аргументов
      * @throws IllegalArgumentException если отсутствует обязательный аргумент
      */
-        public static void validateRequiredArguments(Map<String, String> arguments, String... requiredKeys) {
-        for (String key : requiredKeys) {
-            if (!arguments.containsKey(key) || arguments.get(key).isBlank()) {
-                throw new IllegalArgumentException("Отсутствует обязательный аргумент: --" + key);
-            }
+    public static void validateRequiredArguments(Map<String, String> arguments, String... requiredKeys) {
+        boolean missingArgument = java.util.Arrays.stream(requiredKeys)
+                .anyMatch(key -> !arguments.containsKey(key) || arguments.get(key).isBlank());
+
+        if (missingArgument) {
+            throw new IllegalArgumentException("Отсутствует обязательный аргумент: " +
+                    java.util.Arrays.stream(requiredKeys)
+                            .filter(key -> !arguments.containsKey(key) || arguments.get(key).isBlank())
+                            .findFirst()
+                            .orElse(""));
         }
     }
 

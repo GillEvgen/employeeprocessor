@@ -1,11 +1,10 @@
 package com.gillevgenii.employeeprocessor.service;
 
 import com.gillevgenii.employeeprocessor.model.Department;
-import com.gillevgenii.employeeprocessor.model.Employee;
-import com.gillevgenii.employeeprocessor.model.Manager;
 
 import java.io.*;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class FileService {
@@ -46,11 +45,14 @@ public class FileService {
         }
     }
 
+
     private void printDepartmentToConsole(Department department) {
         System.out.println(department.getName());
         System.out.println(department.getManager());
-        department.getEmployees().stream().forEach(System.out::println);
-        System.out.printf("amount,salary %d,%.2f%n", department.getEmployeeCount(), department.getAverageSalary());
+        department.getEmployees().forEach(employee ->
+                System.out.printf(Locale.US, "Employee,%d, %s, %.1f%n",
+                        employee.getId(), employee.getName(), employee.getSalary()));
+        System.out.printf(Locale.US, "%d, %.2f%n", department.getEmployeeCount(), department.getAverageSalary());
     }
 
     private void printInvalidDataToConsole(List<String> invalidData) {
@@ -62,10 +64,14 @@ public class FileService {
 
     private void printDepartmentToFile(PrintWriter writer, Department department) {
         writer.println(department.getName());
-        writer.println(department.getManager());
-        department.getEmployees().stream().forEach(writer::println);
-        writer.printf("amount,salary %d,%.2f%n", department.getEmployeeCount(), department.getAverageSalary());
+        writer.printf(Locale.US, "Manager,%d, %s, %.1f%n",
+                department.getManager().getId(), department.getManager().getName(), department.getManager().getSalary());
+        department.getEmployees().forEach(employee ->
+                writer.printf(Locale.US, "Employee,%d, %s, %.1f%n",
+                        employee.getId(), employee.getName(), employee.getSalary()));
+        writer.printf(Locale.US, "%d, %.2f%n", department.getEmployeeCount(), department.getAverageSalary());
     }
+
 
     private void printInvalidDataToFile(PrintWriter writer, List<String> invalidData) {
         if (!invalidData.isEmpty()) {

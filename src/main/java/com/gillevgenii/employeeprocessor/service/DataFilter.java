@@ -31,6 +31,7 @@ public class DataFilter {
      * @return карта департаментов (название -> Department)
      */
     public Map<String, Department> groupByDepartments(Map<Integer, Manager> managers, Set<Employee> employees) {
+
         // Создаём департаменты
         Map<String, Department> departments = managers.values().stream()
                 .collect(Collectors.toMap(
@@ -49,6 +50,25 @@ public class DataFilter {
                 }
             }
         });
-        return departments;
+
+        // Сортировка департаментов: HR -> Sales -> остальные в лексикографическом порядке
+        return departments.entrySet().stream()
+                .sorted((entry1, entry2) -> {
+                    String dep1 = entry1.getKey();
+                    String dep2 = entry2.getKey();
+
+                    if ("HR".equals(dep1)) return -1;
+                    if ("HR".equals(dep2)) return 1;
+                    if ("Sales".equals(dep1)) return -1;
+                    if ("Sales".equals(dep2)) return 1;
+                    return dep1.compareTo(dep2);
+                })
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (existing, replacement) -> existing,
+                        java.util.LinkedHashMap::new
+                ));
     }
-}
+    }
+
