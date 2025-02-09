@@ -48,25 +48,26 @@ public class DataFilter {
                 ));
 
         // Добавляем сотрудников в департаменты
-        employees.forEach(employee -> {
+        for (Employee employee : employees) {
             Manager manager = managers.get(employee.getManagerId());
-            if (manager != null) {
-                Department department = departments.get(manager.getDepartment());
-                if (department != null) {
-                    department.addEmployee(employee);
-                }
+            if (manager == null) {
+                continue; // Пропускаем сотрудников без менеджера
             }
-        });
+            Department department = departments.get(manager.getDepartment());
+            if (department != null) {
+                department.addEmployee(employee);
+            }
+        }
 
         return sortDepartments(departments);
     }
 
-    /**
-     * Сортирует департаменты: HR -> Sales -> остальные в лексикографическом порядке.
-     *
-     * @param departments карта департаментов
-     * @return отсортированная карта департаментов
-     */
+        /**
+         * Сортирует департаменты: HR -> Sales -> остальные в лексикографическом порядке.
+         *
+         * @param departments карта департаментов
+         * @return отсортированная карта департаментов
+         */
     private Map<String, Department> sortDepartments(Map<String, Department> departments) {
         return departments.entrySet().stream()
                 .sorted(getDepartmentComparator())
