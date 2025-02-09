@@ -6,7 +6,6 @@ import com.gillevgenii.employeeprocessor.model.Manager;
 import com.gillevgenii.employeeprocessor.utils.ArgumentParser;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class EmployeeProcessor {
     private final String[] args;
@@ -97,29 +96,39 @@ public class EmployeeProcessor {
     }
 
     private void printResultsToConsole(Map<String, Department> departments, List<String> invalidData) {
-        departments.values().forEach(department -> {
-            System.out.println(department.getName());
+        departments.values().forEach(this::printDepartment);
+        printInvalidData(invalidData);
+    }
 
-            // Вывод менеджера
-            System.out.printf(Locale.US, "Manager,%d, %s, %.1f%n",
-                    department.getManager().getId(),
-                    department.getManager().getName(),
-                    department.getManager().getSalary());
+    private void printDepartment(Department department) {
+        System.out.println(department.getName());
+        printManager(department);
+        printEmployees(department);
+        printDepartmentStatistics(department);
+    }
 
-            // Вывод сотрудников
-            department.getEmployees().forEach(employee ->
-                    System.out.printf(Locale.US, "Employee,%d, %s, %.1f%n",
-                            employee.getId(),
-                            employee.getName(),
-                            employee.getSalary()));
+    private void printManager(Department department) {
+        System.out.printf(Locale.US, "Manager,%d, %s, %.1f%n",
+                department.getManager().getId(),
+                department.getManager().getName(),
+                department.getManager().getSalary());
+    }
 
-            // Вывод статистики департамента
-            System.out.printf(Locale.US, "%d, %.2f%n",
-                    department.getEmployeeCount(),
-                    department.getAverageSalary());
-        });
+    private void printEmployees(Department department) {
+        department.getEmployees().forEach(employee ->
+                System.out.printf(Locale.US, "Employee,%d, %s, %.1f%n",
+                        employee.getId(),
+                        employee.getName(),
+                        employee.getSalary()));
+    }
 
-        // Вывод некорректных данных
+    private void printDepartmentStatistics(Department department) {
+        System.out.printf(Locale.US, "%d, %.2f%n",
+                department.getEmployeeCount(),
+                department.getAverageSalary());
+    }
+
+    private void printInvalidData(List<String> invalidData) {
         if (!invalidData.isEmpty()) {
             System.out.println("Некорректные данные:");
             invalidData.forEach(System.out::println);
