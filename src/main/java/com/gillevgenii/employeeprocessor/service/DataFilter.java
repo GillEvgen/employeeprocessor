@@ -4,10 +4,7 @@ import com.gillevgenii.employeeprocessor.model.Department;
 import com.gillevgenii.employeeprocessor.model.Employee;
 import com.gillevgenii.employeeprocessor.model.Manager;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DataFilter {
@@ -66,22 +63,21 @@ public class DataFilter {
 
         // Сортировка департаментов: HR -> Sales -> остальные в лексикографическом порядке
         return departments.entrySet().stream()
-                .sorted((entry1, entry2) -> {
-                    String dep1 = entry1.getKey();
-                    String dep2 = entry2.getKey();
-
-                    if ("HR".equals(dep1)) return -1;
-                    if ("HR".equals(dep2)) return 1;
-                    if ("Sales".equals(dep1)) return -1;
-                    if ("Sales".equals(dep2)) return 1;
-                    return dep1.compareTo(dep2);
-                })
+                .sorted(Comparator.comparing((Map.Entry<String, Department> entry) -> {
+                    String dep = entry.getKey();
+                    if ("HR".equals(dep)) {
+                        return 0;
+                    }
+                    if ("Sales".equals(dep)) {
+                        return 1;
+                    }
+                    return 2;
+                }).thenComparing(Map.Entry::getKey)) // Остальные сортируются по алфавиту
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
                         (existing, replacement) -> existing,
-                        java.util.LinkedHashMap::new
+                        LinkedHashMap::new
                 ));
     }
-    }
-
+}
