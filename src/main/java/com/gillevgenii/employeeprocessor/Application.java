@@ -2,7 +2,7 @@ package com.gillevgenii.employeeprocessor;
 
 import com.gillevgenii.employeeprocessor.service.EmployeeProcessor;
 
-public class Main {
+public class Application {
     public static void main(String[] args) {
         try {
             // Точка входа в приложение
