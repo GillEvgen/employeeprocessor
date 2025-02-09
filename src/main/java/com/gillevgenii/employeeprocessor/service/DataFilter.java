@@ -4,6 +4,8 @@ import com.gillevgenii.employeeprocessor.model.Department;
 import com.gillevgenii.employeeprocessor.model.Employee;
 import com.gillevgenii.employeeprocessor.model.Manager;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,11 +19,22 @@ public class DataFilter {
      * @param managers  карта менеджеров (ID -> Manager)
      * @return отфильтрованный список сотрудников
      */
-    public Set<Employee> filterValidEmployees(Set<Employee> employees, Map<Integer, Manager> managers) {
-        return employees.stream()
-                .filter(employee -> managers.containsKey(employee.getManagerId()))
-                .collect(Collectors.toSet());
+
+    public DataProcessingResult filterValidEmployees(Set<Employee> employees, Map<Integer, Manager> managers, List<String> invalidData) {
+        Set<Employee> validEmployees = new HashSet<>();
+
+        employees.forEach(employee -> {
+            if (managers.containsKey(employee.getManagerId())) {
+                validEmployees.add(employee);
+            } else {
+                invalidData.add(String.format("Employee,%d,%s,%.1f,%d | Ошибка: Отсутствует менеджер",
+                        employee.getId(), employee.getName(), employee.getSalary(), employee.getManagerId()));
+            }
+        });
+
+        return new DataProcessingResult(managers, validEmployees, invalidData);
     }
+
 
     /**
      * Группирует сотрудников и менеджеров по департаментам.

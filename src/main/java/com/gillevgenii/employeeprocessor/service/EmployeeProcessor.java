@@ -6,6 +6,7 @@ import com.gillevgenii.employeeprocessor.model.Manager;
 import com.gillevgenii.employeeprocessor.utils.ArgumentParser;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class EmployeeProcessor {
     private final String[] args;
@@ -66,9 +67,7 @@ public class EmployeeProcessor {
         });
 
         DataFilter dataFilter = new DataFilter();
-        Set<Employee> validEmployees = dataFilter.filterValidEmployees(employees, managers);
-
-        return new DataProcessingResult(managers, validEmployees, invalidData);
+        return dataFilter.filterValidEmployees(employees, managers, invalidData);
     }
 
     private Map<String, Department> groupDepartments(DataProcessingResult dataProcessingResult) {

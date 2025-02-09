@@ -9,3 +9,4 @@ Manager,2,Michael Brown,6600,Sales
 Employee,103,Chris White,-2900,2
 Employee,104,Anna Taylor,3410,2
 Employee,105,Robert Black,0.0,2
+Employee,105,Robert Black,3000.0,999
