@@ -1,5 +1,6 @@
 package com.gillevgenii.employeeprocessor.utils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,13 +64,15 @@ public class ArgumentParser {
      * @throws IllegalArgumentException если значение аргумента недопустимо
      */
     public static void validateArgumentValue(Map<String, String> arguments, String key, String... validValues) {
-        if (arguments.containsKey(key)) {
-            String value = arguments.get(key).toLowerCase();
-            for (String validValue : validValues) {
-                if (validValue.equals(value)) {
-                    return;
-                }
-            }
+        String value = arguments.getOrDefault(key, "").toLowerCase();
+
+        if (value.isEmpty()) {
+            return; // Если ключ отсутствует, просто выходим
+        }
+
+        boolean isValid = Arrays.stream(validValues).anyMatch(value::equals);
+
+        if (!isValid) {
             throw new IllegalArgumentException("Некорректное значение для --" + key + ": " + value);
         }
     }
