@@ -14,8 +14,7 @@ public class EmployeeProcessor {
         this.args = args;
     }
 
-    public void run() {
-        try {
+    public void run() throws Exception {
             Map<String, String> arguments = parseAndValidateArguments();
             List<String> lines = readFile(arguments);
 
@@ -24,13 +23,6 @@ public class EmployeeProcessor {
 
             sortDepartmentsAndEmployees(arguments, departments);
             outputResults(arguments, departments, dataProcessingResult.getInvalidData());
-
-        } catch (IllegalArgumentException e) {
-            System.err.println("Ошибка: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Произошла ошибка: " + e.getMessage());
-            e.printStackTrace(); // Для отладки
-        }
     }
 
     private Map<String, String> parseAndValidateArguments() {
