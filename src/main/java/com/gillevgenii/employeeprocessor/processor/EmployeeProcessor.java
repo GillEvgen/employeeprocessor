@@ -1,9 +1,17 @@
-package com.gillevgenii.employeeprocessor.service;
+package com.gillevgenii.employeeprocessor.processor;
 
+import com.gillevgenii.employeeprocessor.filter.EmployeeFilter;
+import com.gillevgenii.employeeprocessor.grouping.DepartmentGrouping;
 import com.gillevgenii.employeeprocessor.model.Department;
 import com.gillevgenii.employeeprocessor.model.Employee;
 import com.gillevgenii.employeeprocessor.model.Manager;
-import com.gillevgenii.employeeprocessor.utils.ArgumentParser;
+import com.gillevgenii.employeeprocessor.parser.ArgumentParser;
+import com.gillevgenii.employeeprocessor.parser.DataParser;
+import com.gillevgenii.employeeprocessor.service.DataProcessingResult;
+import com.gillevgenii.employeeprocessor.service.FileService;
+import com.gillevgenii.employeeprocessor.service.SortingService;
+import com.gillevgenii.employeeprocessor.sorting.DepartmentSorting;
+import com.gillevgenii.employeeprocessor.validator.ArgumentValidator;
 
 import java.util.*;
 
@@ -14,28 +22,25 @@ public class EmployeeProcessor {
         this.args = args;
     }
 
-    public void run() throws Exception {
-            Map<String, String> arguments = parseAndValidateArguments();
-            List<String> lines = readFile(arguments);
+    public void run() {
+        Map<String, String> arguments = parseArguments();
+        List<String> lines = readFile(arguments.get("path"));
 
-            DataProcessingResult dataProcessingResult = parseAndFilterData(lines);
-            Map<String, Department> departments = groupDepartments(dataProcessingResult);
+        DataProcessingResult dataProcessingResult = parseAndFilterData(lines);
+        Map<String, Department> departments = groupDepartments(dataProcessingResult);
 
-            sortDepartmentsAndEmployees(arguments, departments);
-            outputResults(arguments, departments, dataProcessingResult.getInvalidData());
+        sortDepartmentsAndEmployees(arguments, departments);
+        writeResults(arguments, departments, dataProcessingResult.getInvalidData());
     }
 
-    private Map<String, String> parseAndValidateArguments() {
+    private Map<String, String> parseArguments() {
         Map<String, String> arguments = ArgumentParser.parse(args);
-        ArgumentParser.validateRequiredArguments(arguments, "path");
-        ArgumentParser.validateArgumentValue(arguments, "s", "name", "salary");
-        ArgumentParser.validateArgumentValue(arguments, "o", "console", "file");
+        ArgumentValidator.validate(arguments);
         return arguments;
     }
 
-    private List<String> readFile(Map<String, String> arguments) {
-        FileService fileService = new FileService();
-        return fileService.readFile(arguments.get("path"));
+    private List<String> readFile(String filePath) {
+        return new FileService().readFile(filePath);
     }
 
     private DataProcessingResult parseAndFilterData(List<String> lines) {
@@ -57,33 +62,35 @@ public class EmployeeProcessor {
             }
         });
 
-        DataFilter dataFilter = new DataFilter();
-        return dataFilter.filterValidEmployees(employees, managers, invalidData);
+        return new EmployeeFilter().filterValidEmployees(employees, managers, invalidData);
     }
 
     private Map<String, Department> groupDepartments(DataProcessingResult dataProcessingResult) {
-        DataFilter dataFilter = new DataFilter();
-        return dataFilter.groupByDepartments(dataProcessingResult.getManagers(), dataProcessingResult.getValidEmployees());
+        return new DepartmentGrouping().groupByDepartments(dataProcessingResult.getManagers(), dataProcessingResult.getValidEmployees());
     }
 
     private void sortDepartmentsAndEmployees(Map<String, String> arguments, Map<String, Department> departments) {
+
+        // Сначала сортируем департаменты с помощью DepartmentSorting
+        departments = DepartmentSorting.sortDepartments(departments);
+
+        // Затем применяем дополнительную сортировку, если она указана
         String sortBy = arguments.getOrDefault("s", "none");
         String order = arguments.getOrDefault("order", "asc");
 
         if (!"none".equalsIgnoreCase(sortBy)) {
-            SortService sortService = new SortService();
-            sortService.sortDepartments(departments, sortBy, order);
+            new SortingService().sortDepartments(departments, sortBy, order);
         }
     }
 
-    private void outputResults(Map<String, String> arguments, Map<String, Department> departments, List<String> invalidData) {
+    private void writeResults(Map<String, String> arguments, Map<String, Department> departments, List<String> invalidData) {
         String output = arguments.getOrDefault("o", "console");
+        FileService fileService = new FileService();
+
         if ("console".equalsIgnoreCase(output)) {
             printResultsToConsole(departments, invalidData);
         } else {
-            FileService fileService = new FileService();
-            String outputPath = arguments.get("path");
-            fileService.outputResults(departments, invalidData, output, outputPath);
+            fileService.outputResults(departments, invalidData, output, arguments.get("path"));
         }
     }
 
@@ -100,24 +107,28 @@ public class EmployeeProcessor {
     }
 
     private void printManager(Department department) {
-        System.out.printf(Locale.US, "Manager,%d, %s, %.1f%n",
+        System.out.print("Manager,%d, %s, %.1f%n".formatted(
                 department.getManager().getId(),
                 department.getManager().getName(),
-                department.getManager().getSalary());
+                department.getManager().getSalary()
+        ));
     }
 
     private void printEmployees(Department department) {
         department.getEmployees().forEach(employee ->
-                System.out.printf(Locale.US, "Employee,%d, %s, %.1f%n",
+                System.out.print("Employee,%d, %s, %.1f%n".formatted(
                         employee.getId(),
                         employee.getName(),
-                        employee.getSalary()));
+                        employee.getSalary()
+                ))
+        );
     }
 
     private void printDepartmentStatistics(Department department) {
-        System.out.printf(Locale.US, "%d, %.2f%n",
+        System.out.print("%d, %.2f%n".formatted(
                 department.getEmployeeCount(),
-                department.getAverageSalary());
+                department.getAverageSalary()
+        ));
     }
 
     private void printInvalidData(List<String> invalidData) {

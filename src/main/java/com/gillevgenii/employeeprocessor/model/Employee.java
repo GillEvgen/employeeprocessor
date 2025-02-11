@@ -18,23 +18,23 @@ public class Employee{
             this.managerId = managerId;
         }
 
-        public String getPosition() {
+    public String getPosition() {
             return position;
         }
 
-        public int getId() {
+    public int getId() {
             return id;
         }
 
-        public String getName() {
+    public String getName() {
             return name;
         }
 
-        public double getSalary() {
+    public double getSalary() {
             return salary;
         }
 
-        public int getManagerId() {
+    public int getManagerId() {
             return managerId;
         }
 
@@ -52,7 +52,7 @@ public class Employee{
     }
 
     @Override
-        public String toString() {
-            return String.format("%s,%d,%s,%.2f,%d", position, id, name, salary, managerId);
-        }
+    public String toString() {
+        return "%s,%d,%s,%.2f,%s".formatted(getPosition(), getId(), getName(), getSalary());
+    }
 }

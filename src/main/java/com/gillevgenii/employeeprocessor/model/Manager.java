@@ -31,7 +31,7 @@ public class Manager extends Employee {
 
     @Override
     public String toString() {
-        return String.format("%s,%d,%s,%.2f,%s", getPosition(), getId(), getName(), getSalary(), department);
+        return "%s,%d,%s,%.2f,%s".formatted(getPosition(), getId(), getName(), getSalary());
     }
 }
 

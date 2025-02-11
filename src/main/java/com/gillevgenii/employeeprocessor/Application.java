@@ -1,6 +1,6 @@
 package com.gillevgenii.employeeprocessor;
 
-import com.gillevgenii.employeeprocessor.service.EmployeeProcessor;
+import com.gillevgenii.employeeprocessor.processor.EmployeeProcessor;
 
 public class Application {
     public static void main(String[] args) {
