@@ -15,16 +15,19 @@ public class DepartmentSorting {
      * @param departments карта департаментов
      * @return отсортированная карта департаментов
      */
-
     public static Map<String, Department> sortDepartments(Map<String, Department> departments) {
-        return departments.entrySet().stream()
-                .sorted(getDepartmentComparator())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (existing, replacement) -> existing,
-                        LinkedHashMap::new
-                ));
+        try {
+            return departments.entrySet().stream()
+                    .sorted(getDepartmentComparator())
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue,
+                            (existing, replacement) -> existing,
+                            LinkedHashMap::new
+                    ));
+        } catch (Exception e) {
+            throw new RuntimeException("Не удалось отсортировать департаменты", e);
+        }
     }
 
     /**
@@ -33,13 +36,19 @@ public class DepartmentSorting {
      *
      * @return компаратор для сортировки департаментов
      */
-
     private static Comparator<Map.Entry<String, Department>> getDepartmentComparator() {
         return Comparator.comparing((Map.Entry<String, Department> entry) -> {
-            String dep = entry.getKey();
-            if ("HR".equals(dep)) return 0;
-            if ("Sales".equals(dep)) return 1;
-            return 2;
+            try {
+                String dep = entry.getKey();
+                if ("HR".equals(dep)) {
+                    return 0;
+                } else if ("Sales".equals(dep)) {
+                    return 1;
+                }
+                return 2;
+            } catch (Exception e) {
+                throw new RuntimeException("Ошибка в компараторе при обработке департамента: " + entry.getKey(), e);
+            }
         }).thenComparing(Map.Entry::getKey);
     }
 }

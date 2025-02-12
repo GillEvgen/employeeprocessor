@@ -7,10 +7,15 @@ public class Application {
         try {
             new EmployeeProcessor(args).run();
         } catch (IllegalArgumentException e) {
-            System.err.println("Ошибка: " + e.getMessage()); // Ошибки пользователя
+            System.err.println("[Ошибка пользователя] " + e.getMessage());
+        } catch (RuntimeException e) {
+            System.err.println("[Ошибка выполнения] " + e.getMessage());
+            e.printStackTrace(); // Логирование ошибки
         } catch (Exception e) {
-            System.err.println("Критическая ошибка: " + e.getMessage());
-            e.printStackTrace(); // Для отладки
+            System.err.println("[Критическая ошибка] " + e.getMessage());
+            e.printStackTrace(); // Полный StackTrace для диагностики
+        } finally {
+            System.out.println("Программа завершила выполнение.");
         }
     }
 }

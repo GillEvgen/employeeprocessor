@@ -18,24 +18,29 @@ public class DepartmentGrouping {
      * @param employees список сотрудников
      * @return карта департаментов (название -> Department)
      */
-
     public static Map<String, Department> groupByDepartments(Map<Integer, Manager> managers, Set<Employee> employees) {
-        Map<String, Department> departments = managers.values().stream()
-                .collect(Collectors.toMap(
-                        Manager::getDepartment,
-                        manager -> new Department(manager.getDepartment(), manager),
-                        (existing, replacement) -> existing,
-                        LinkedHashMap::new
-                ));
+        try {
+            Map<String, Department> departments = managers.values().stream()
+                    .collect(Collectors.toMap(
+                            Manager::getDepartment,
+                            manager -> new Department(manager.getDepartment(), manager),
+                            (existing, replacement) -> existing,
+                            LinkedHashMap::new
+                    ));
 
-        employees.forEach(employee -> {
-            Manager manager = managers.get(employee.getManagerId());
-            if (manager != null) {
-                departments.get(manager.getDepartment()).addEmployee(employee);
-            }
-        });
+            employees.forEach(employee -> {
+                Manager manager = managers.get(employee.getManagerId());
+                if (manager != null) {
+                    Department department = departments.get(manager.getDepartment());
+                    if (department != null) {
+                        department.addEmployee(employee);
+                    }
+                }
+            });
 
-        return departments;
+            return departments;
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при группировке департаментов: " + e.getMessage(), e);
+        }
     }
 }
-

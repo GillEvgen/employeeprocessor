@@ -12,17 +12,21 @@ public class FileService {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             return reader.lines().toList();
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при чтении файла: " + e.getMessage());
+            throw new RuntimeException("Ошибка при чтении файла: " + filePath, e);
         }
     }
 
-    public static void outputResults(Map<String, Department> departments, List<String> invalidData, String output, String filePath) {
-        if ("console".equalsIgnoreCase(output)) {
-            printResultsToConsole(departments, invalidData);
-        } else if ("file".equalsIgnoreCase(output)) {
-            writeToFile(departments, invalidData, filePath);
-        } else {
-            throw new IllegalArgumentException("Некорректный тип вывода: " + output);
+    public static void writeResults(Map<String, Department> departments, List<String> invalidData, String output, String filePath) {
+        try {
+            if ("console".equalsIgnoreCase(output)) {
+                printResultsToConsole(departments, invalidData);
+            } else if ("file".equalsIgnoreCase(output)) {
+                writeToFile(departments, invalidData, filePath);
+            } else {
+                throw new IllegalArgumentException("Некорректный тип вывода: " + output);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при записи результатов", e);
         }
     }
 
@@ -31,13 +35,17 @@ public class FileService {
             departments.values().forEach(department -> printDepartmentToFile(writer, department));
             printInvalidDataToFile(writer, invalidData);
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка записи в файл: " + e.getMessage());
+            throw new RuntimeException("Ошибка записи в файл: " + filePath, e);
         }
     }
 
     private static void printResultsToConsole(Map<String, Department> departments, List<String> invalidData) {
-        departments.values().forEach(FileService::printDepartmentToConsole);
-        printInvalidDataToConsole(invalidData);
+        try {
+            departments.values().forEach(FileService::printDepartmentToConsole);
+            printInvalidDataToConsole(invalidData);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при выводе в консоль", e);
+        }
     }
 
     private static void printDepartmentToConsole(Department department) {

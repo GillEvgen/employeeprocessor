@@ -23,74 +23,97 @@ public class EmployeeProcessor {
     }
 
     public void run() {
-        Map<String, String> arguments = parseArguments();
-        List<String> lines = readFile(arguments.get("path"));
+        try {
+            Map<String, String> arguments = parseArguments();
+            List<String> lines = readFile(arguments.get("path"));
 
-        DataProcessingResult dataProcessingResult = parseAndFilterData(lines);
-        Map<String, Department> departments = groupDepartments(dataProcessingResult);
+            DataProcessingResult dataProcessingResult = parseAndFilterData(lines);
+            Map<String, Department> departments = groupDepartments(dataProcessingResult);
 
-        sortDepartmentsAndEmployees(arguments, departments);
-        writeResults(arguments, departments, dataProcessingResult.getInvalidData());
+            sortDepartmentsAndEmployees(arguments, departments);
+            writeResults(arguments, departments, dataProcessingResult.getInvalidData());
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка в процессе обработки сотрудников: " + e.getMessage(), e);
+        }
     }
 
     private Map<String, String> parseArguments() {
-        Map<String, String> arguments = ArgumentParser.parse(args);
-        ArgumentValidator.validate(arguments);
-        return arguments;
+        try {
+            Map<String, String> arguments = ArgumentParser.parse(args);
+            ArgumentValidator.validate(arguments);
+            return arguments;
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при разборе аргументов командной строки: " + e.getMessage(), e);
+        }
     }
 
     private List<String> readFile(String filePath) {
-        return new FileService().readFile(filePath);
+        try {
+            return FileService.readFile(filePath);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при чтении файла: " + filePath, e);
+        }
     }
 
     private DataProcessingResult parseAndFilterData(List<String> lines) {
-        DataParser dataParser = new DataParser();
-        Map<Integer, Manager> managers = new HashMap<>();
-        Set<Employee> employees = new HashSet<>();
-        List<String> invalidData = new ArrayList<>();
+        try {
+            DataParser dataParser = new DataParser();
+            Map<Integer, Manager> managers = new HashMap<>();
+            Set<Employee> employees = new HashSet<>();
+            List<String> invalidData = new ArrayList<>();
 
-        lines.forEach(line -> {
-            try {
-                Employee employee = dataParser.parseLine(line);
-                if (employee instanceof Manager) {
-                    managers.put(employee.getId(), (Manager) employee);
-                } else {
-                    employees.add(employee);
+            lines.forEach(line -> {
+                try {
+                    Employee employee = dataParser.parseLine(line);
+                    if (employee instanceof Manager) {
+                        managers.put(employee.getId(), (Manager) employee);
+                    } else {
+                        employees.add(employee);
+                    }
+                } catch (IllegalArgumentException e) {
+                    invalidData.add(line + " | Ошибка: " + e.getMessage());
                 }
-            } catch (IllegalArgumentException e) {
-                invalidData.add(line + " | Ошибка: " + e.getMessage());
-            }
-        });
+            });
 
-        return new EmployeeFilter().filterValidEmployees(employees, managers, invalidData);
+            return EmployeeFilter.filterValidEmployees(employees, managers, invalidData);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при обработке данных сотрудников", e);
+        }
     }
 
     private Map<String, Department> groupDepartments(DataProcessingResult dataProcessingResult) {
-        return new DepartmentGrouping().groupByDepartments(dataProcessingResult.getManagers(), dataProcessingResult.getValidEmployees());
+        try {
+            return DepartmentGrouping.groupByDepartments(dataProcessingResult.getManagers(), dataProcessingResult.getValidEmployees());
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при группировке департаментов", e);
+        }
     }
 
     private void sortDepartmentsAndEmployees(Map<String, String> arguments, Map<String, Department> departments) {
+        try {
+            departments = DepartmentSorting.sortDepartments(departments);
+            String sortBy = arguments.getOrDefault("s", "none");
+            String order = arguments.getOrDefault("order", "asc");
 
-        // Сначала сортируем департаменты с помощью DepartmentSorting
-        departments = DepartmentSorting.sortDepartments(departments);
-
-        // Затем применяем дополнительную сортировку, если она указана
-        String sortBy = arguments.getOrDefault("s", "none");
-        String order = arguments.getOrDefault("order", "asc");
-
-        if (!"none".equalsIgnoreCase(sortBy)) {
-            new SortingService().sortDepartments(departments, sortBy, order);
+            if (!"none".equalsIgnoreCase(sortBy)) {
+                SortingService.sortDepartments(departments, sortBy, order);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при сортировке департаментов и сотрудников", e);
         }
     }
 
     private void writeResults(Map<String, String> arguments, Map<String, Department> departments, List<String> invalidData) {
-        String output = arguments.getOrDefault("o", "console");
-        FileService fileService = new FileService();
+        try {
+            String output = arguments.getOrDefault("o", "console");
 
-        if ("console".equalsIgnoreCase(output)) {
-            printResultsToConsole(departments, invalidData);
-        } else {
-            fileService.outputResults(departments, invalidData, output, arguments.get("path"));
+            if ("console".equalsIgnoreCase(output)) {
+                printResultsToConsole(departments, invalidData);
+            } else {
+                FileService.writeResults(departments, invalidData, output, arguments.get("path"));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при записи результатов", e);
         }
     }
 
@@ -107,28 +130,28 @@ public class EmployeeProcessor {
     }
 
     private void printManager(Department department) {
-        System.out.print("Manager,%d, %s, %.1f%n".formatted(
+        System.out.printf("Manager,%d, %s, %.1f%n",
                 department.getManager().getId(),
                 department.getManager().getName(),
                 department.getManager().getSalary()
-        ));
+        );
     }
 
     private void printEmployees(Department department) {
         department.getEmployees().forEach(employee ->
-                System.out.print("Employee,%d, %s, %.1f%n".formatted(
+                System.out.printf("Employee,%d, %s, %.1f%n",
                         employee.getId(),
                         employee.getName(),
                         employee.getSalary()
-                ))
+                )
         );
     }
 
     private void printDepartmentStatistics(Department department) {
-        System.out.print("%d, %.2f%n".formatted(
+        System.out.printf("%d, %.2f%n",
                 department.getEmployeeCount(),
                 department.getAverageSalary()
-        ));
+        );
     }
 
     private void printInvalidData(List<String> invalidData) {

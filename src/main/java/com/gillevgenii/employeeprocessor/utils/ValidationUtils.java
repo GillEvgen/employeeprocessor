@@ -19,7 +19,7 @@ public class ValidationUtils {
     public static void validateId(int id) {
         if (id <= 0) {
             throw new IllegalArgumentException(
-                    String.format("Некорректный ID: %d. Должен быть положительным.", id)
+                    String.format("Некорректный ID: %d. Должен быть положительным.".formatted(id))
             );
         }
     }

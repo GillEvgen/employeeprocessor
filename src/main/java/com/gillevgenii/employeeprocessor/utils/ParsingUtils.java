@@ -1,7 +1,7 @@
 package com.gillevgenii.employeeprocessor.utils;
 
 public class ParsingUtils {
-    public static int parseValidId(String value) {
+    public static int parseInteger(String value) {
         try {
             return Integer.parseInt(value.trim());
         } catch (NumberFormatException e) {

@@ -20,7 +20,7 @@ public class DataParser {
         String role = parts[0].trim();
         ValidationUtils.validateNonEmpty(role, "Роль");
 
-        int id = ParsingUtils.parseValidId(parts[1]);
+        int id = ParsingUtils.parseInteger(parts[1]);
         String name = parts[2].trim();
         ValidationUtils.validateNonEmpty(name, "Имя");
         ValidationUtils.validateNameLength(name);
@@ -39,7 +39,7 @@ public class DataParser {
             ValidationUtils.validateDepartmentName(departmentOrManagerId);
             return new Manager(role, id, name, salary, departmentOrManagerId);
         }
-        int managerId = ParsingUtils.parseValidId(departmentOrManagerId);
+        int managerId = ParsingUtils.parseInteger(departmentOrManagerId);
         ValidationUtils.validateId(managerId);
         return new Employee(role, id, name, salary, managerId);
     }

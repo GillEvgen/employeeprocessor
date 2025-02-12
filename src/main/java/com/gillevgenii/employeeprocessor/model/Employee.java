@@ -53,6 +53,6 @@ public class Employee{
 
     @Override
     public String toString() {
-        return "%s,%d,%s,%.2f,%s".formatted(getPosition(), getId(), getName(), getSalary());
+        return "%s,%d,%s,%.2f,%s".formatted(getPosition(), getId(), getName(), getSalary(), getManagerId());
     }
 }
