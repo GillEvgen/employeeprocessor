@@ -11,9 +11,6 @@ public class Application {
         } catch (RuntimeException e) {
             System.err.println("[Ошибка выполнения] " + e.getMessage());
             e.printStackTrace(); // Логирование ошибки
-        } catch (Exception e) {
-            System.err.println("[Критическая ошибка] " + e.getMessage());
-            e.printStackTrace(); // Полный StackTrace для диагностики
         } finally {
             System.out.println("Программа завершила выполнение.");
         }

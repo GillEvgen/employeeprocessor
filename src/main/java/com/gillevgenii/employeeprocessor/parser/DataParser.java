@@ -9,7 +9,6 @@ public class DataParser {
 
     private static final int REQUIRED_FIELDS_COUNT = 5;
     private static final String ROLE_MANAGER = "Manager";
-    private static final String ROLE_EMPLOYEE = "Employee";
 
     public Employee parseLine(String line) {
         String[] parts = line.split(",", REQUIRED_FIELDS_COUNT);
@@ -34,7 +33,7 @@ public class DataParser {
         return createEmployee(role, id, name, salary, departmentOrManagerId);
     }
 
-    private Employee createEmployee(String role, int id, String name, double salary, String departmentOrManagerId) {
+    private static Employee createEmployee(String role, int id, String name, double salary, String departmentOrManagerId) {
         if (ROLE_MANAGER.equalsIgnoreCase(role)) {
             ValidationUtils.validateDepartmentName(departmentOrManagerId);
             return new Manager(role, id, name, salary, departmentOrManagerId);
